@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import "github.com/maniSHarma7575/loadbalancer/lib"
 
 func main() {
-	fmt.Println("Hello!")
+	lb := lib.InitLB()
+
+	lb.Run()
 }

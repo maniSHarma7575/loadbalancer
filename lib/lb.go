@@ -38,7 +38,7 @@ type IncomingReq struct {
 
 var lb *LB
 
-func InitLB() {
+func InitLB() *LB {
 	backends := []*Backend{
 		&Backend{Host: "localhost", Port: 8085, IsHealthy: true},
 		&Backend{Host: "localhost", Port: 8086, IsHealthy: true},
@@ -50,6 +50,7 @@ func InitLB() {
 		Events:   make(chan Event),
 		Strategy: NewRoundRobinBS(backends),
 	}
+	return lb
 }
 
 func (lb *LB) Run() {
