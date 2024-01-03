@@ -35,7 +35,7 @@ func (rrbs *RoundRobinBS) RegisterBackend(backend *Backend) {
 
 func (rrbs *RoundRobinBS) PrintTopology() {
 	for index, backend := range rrbs.Backends {
-		fmt.Println(fmt.Sprintf("		[%d] %s", index, backend))
+		fmt.Printf("		[%d] %s", index, backend.stringfy())
 	}
 }
 
@@ -61,9 +61,9 @@ func (sbs *StaticBS) RegisterBackend(backend *Backend) {
 func (sbs *StaticBS) PrintTopology() {
 	for index, backend := range sbs.Backends {
 		if index == sbs.Index {
-			fmt.Println(fmt.Sprintf("	[%s] %s", "x", backend))
+			fmt.Printf("	[%s] %s", "x", backend.stringfy())
 		} else {
-			fmt.Println(fmt.Sprintf(" [%s] %s", " ", backend))
+			fmt.Printf(" [%s] %s", " ", backend.stringfy())
 		}
 	}
 }
