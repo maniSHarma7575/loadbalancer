@@ -1,9 +1,9 @@
 package main
 
-import "github.com/maniSHarma7575/loadbalancer/lib"
+import "github.com/maniSHarma7575/loadbalancer/internal"
 
 func main() {
-	lb := lib.InitLB()
+	lb := internal.InitLB()
 
 	lb.Run()
 }
