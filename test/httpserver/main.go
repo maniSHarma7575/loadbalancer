@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-const keyServerAddr = "serverAddr"
+const keyServerAddr string = "serverAddr"
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -21,7 +21,7 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 func getHello(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	fmt.Printf("%s: got the hello request\n", ctx.Value(keyServerAddr))
-	io.WriteString(w, "Hello, Http! Let's make it fun")
+	io.WriteString(w, "Hello, Let's make HTTP fun")
 }
 
 func main() {
