@@ -48,7 +48,7 @@ func InitLB() *LB {
 	lb = &LB{
 		Backends: backends,
 		Events:   make(chan Event),
-		Strategy: NewRoundRobinBS(backends),
+		Strategy: NewConsistentHashingBS(backends),
 	}
 	return lb
 }
