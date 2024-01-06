@@ -40,15 +40,15 @@ var lb *LB
 
 func InitLB() *LB {
 	backends := []*Backend{
-		&Backend{Host: "localhost", Port: 8085, IsHealthy: true},
-		&Backend{Host: "localhost", Port: 8086, IsHealthy: true},
-		&Backend{Host: "localhost", Port: 8087, IsHealthy: true},
+		{Host: "localhost", Port: 8085, IsHealthy: true},
+		{Host: "localhost", Port: 8086, IsHealthy: true},
+		{Host: "localhost", Port: 8087, IsHealthy: true},
 	}
 
 	lb = &LB{
 		Backends: backends,
 		Events:   make(chan Event),
-		Strategy: NewRoundRobinBS(backends),
+		Strategy: NewConsistentHashingBS(backends),
 	}
 	return lb
 }
