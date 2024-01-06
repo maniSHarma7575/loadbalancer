@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/maniSHarma7575/loadbalancer/internal/loadbalancer"
+	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
 
 type ConsistentHashingBS struct {
