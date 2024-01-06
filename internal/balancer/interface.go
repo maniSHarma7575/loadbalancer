@@ -1,4 +1,4 @@
-package loadbalancer
+package balancer
 
 import "net"
 
@@ -17,4 +17,17 @@ type BalancingStrategy interface {
 	GetNextBackend(IncomingReq) Backend
 	RegisterBackend(Backend)
 	PrintTopology()
+}
+
+type LB interface {
+	Proxy(IncomingReq)
+	Run()
+	RunEventLoop()
+	AddBackend(Backend)
+	ChangeStrategy(string)
+}
+
+type Event interface {
+	GetEventName() string
+	GetData() interface{}
 }

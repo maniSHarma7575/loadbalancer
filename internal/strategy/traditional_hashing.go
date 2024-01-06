@@ -3,7 +3,7 @@ package strategy
 import (
 	"fmt"
 
-	"github.com/maniSHarma7575/loadbalancer/internal/loadbalancer"
+	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
 
 type TraditionalHasingBS struct {
