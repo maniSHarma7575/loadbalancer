@@ -1,6 +1,10 @@
 package lib
 
-import "fmt"
+import (
+	"crypto/sha256"
+	"fmt"
+	"math/big"
+)
 
 type BalancingStrategy interface {
 	Init([]*Backend)
@@ -16,6 +20,13 @@ type RoundRobinBS struct {
 
 type StaticBS struct {
 	Index    int
+	Backends []*Backend
+}
+
+type ConsistentHashingBS struct {
+}
+
+type TraditionalHasingBS struct {
 	Backends []*Backend
 }
 
@@ -72,4 +83,44 @@ func NewStaticBS(backends []*Backend) *StaticBS {
 	strategy := new(StaticBS)
 	strategy.Init(backends)
 	return strategy
+}
+
+func (thbs *TraditionalHasingBS) hashFn(key string) *big.Int {
+	h := sha256.New()
+
+	h.Write([]byte(key))
+	md := h.Sum(nil)
+
+	keymodbackends := new(big.Int)
+
+	mdBigInt := new(big.Int).SetBytes(md)
+
+	totalBackends := len(thbs.Backends)
+	return keymodbackends.Mod(mdBigInt, big.NewInt(int64(totalBackends)))
+}
+
+func NewTraditionalHashBS(backends []*Backend) *TraditionalHasingBS {
+	strategy := new(TraditionalHasingBS)
+	strategy.Init(backends)
+	return strategy
+}
+
+func (tbhs *TraditionalHasingBS) Init(backends []*Backend) {
+	tbhs.Backends = backends
+}
+
+func (tbhs *TraditionalHasingBS) GetNextBackend(req IncomingReq) *Backend {
+	backendIndex := tbhs.hashFn(req.reqId)
+
+	return tbhs.Backends[backendIndex.Int64()]
+}
+
+func (tbhs *TraditionalHasingBS) RegisterBackend(backend *Backend) {
+	tbhs.Backends = append(tbhs.Backends, backend)
+}
+
+func (thbs *TraditionalHasingBS) PrintTopology() {
+	for _, backend := range thbs.Backends {
+		fmt.Printf("	[%s] %s", " ", backend.stringfy())
+	}
 }
