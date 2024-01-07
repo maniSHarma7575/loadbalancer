@@ -18,11 +18,15 @@ type LoadBalancer struct {
 
 var lb *LoadBalancer
 
-func InitLB() *LoadBalancer {
-	backends := []loadbalancer.Backend{
-		&Backend{Host: "localhost", Port: 8085, IsHealthy: true},
-		&Backend{Host: "localhost", Port: 8086, IsHealthy: true},
-		&Backend{Host: "localhost", Port: 8087, IsHealthy: true},
+func InitLB(configs map[string]interface{}) *LoadBalancer {
+	backends := []loadbalancer.Backend{}
+
+	for _, backendDetails := range configs["Backends"].([]map[string]interface{}) {
+		backends = append(backends, &Backend{
+			Host:      backendDetails["Host"].(string),
+			Port:      backendDetails["Port"].(int),
+			IsHealthy: backendDetails["IsHealthy"].(bool),
+		})
 	}
 
 	lb = &LoadBalancer{
@@ -30,6 +34,8 @@ func InitLB() *LoadBalancer {
 		Events:   make(chan loadbalancer.Event),
 		Strategy: strategy.NewConsistentHashingBS(backends),
 	}
+
+	lb.ChangeStrategy(configs["Strategy"].(string))
 	return lb
 }
 
