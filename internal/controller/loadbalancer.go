@@ -4,6 +4,8 @@ import (
 	"io"
 	"log"
 	"net"
+	"slices"
+	"sync"
 
 	"github.com/google/uuid"
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
@@ -14,6 +16,7 @@ type LoadBalancer struct {
 	Backends []loadbalancer.Backend
 	Events   chan loadbalancer.Event
 	Strategy loadbalancer.BalancingStrategy
+	sync.RWMutex
 }
 
 var lb *LoadBalancer
@@ -23,9 +26,10 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 
 	for _, backendDetails := range configs["Backends"].([]map[string]interface{}) {
 		backends = append(backends, &Backend{
-			Host:      backendDetails["Host"].(string),
-			Port:      backendDetails["Port"].(int),
-			IsHealthy: backendDetails["IsHealthy"].(bool),
+			Host:            backendDetails["Host"].(string),
+			Port:            backendDetails["Port"].(int),
+			IsHealthy:       backendDetails["IsHealthy"].(bool),
+			HealthStatusUrl: backendDetails["HealthStatusUrl"].(string),
 		})
 	}
 
@@ -40,6 +44,11 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 }
 
 func (lb *LoadBalancer) Run() {
+	healthCheckInterval := 10
+	healthChecker := NewHealthChecker(lb.Backends)
+	healthChecker.Attach(lb)
+	healthChecker.Start(healthCheckInterval)
+
 	listener, err := net.Listen("tcp", ":8082")
 
 	if err != nil {
@@ -129,4 +138,24 @@ func (lb *LoadBalancer) Proxy(req loadbalancer.IncomingReq) {
 
 	go io.Copy(backendConn, req.GetSrcConn())
 	go io.Copy(req.GetSrcConn(), backendConn)
+}
+
+func (lb *LoadBalancer) BackendUp(backend loadbalancer.Backend) {
+	defer lb.Unlock()
+
+	lb.Lock()
+
+	idx := slices.IndexFunc(lb.Backends, func(b loadbalancer.Backend) bool { return backend == b })
+	lb.Backends[idx].UpdateIsHealthy(true)
+	log.Printf("Server is up: %s", backend.Stringify())
+}
+
+func (lb *LoadBalancer) BackendDown(backend loadbalancer.Backend) {
+	defer lb.Unlock()
+
+	lb.Lock()
+
+	idx := slices.IndexFunc(lb.Backends, func(b loadbalancer.Backend) bool { return backend == b })
+	lb.Backends[idx].UpdateIsHealthy(false)
+	log.Printf("Server went down: %s", backend.Stringify())
 }
