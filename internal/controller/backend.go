@@ -3,10 +3,11 @@ package controller
 import "fmt"
 
 type Backend struct {
-	Port           int
-	Host           string
-	IsHealthy      bool
-	NumberRequests int
+	Port            int
+	Host            string
+	IsHealthy       bool
+	NumberRequests  int
+	HealthStatusUrl string
 }
 
 func (b *Backend) Stringify() string {
@@ -15,4 +16,12 @@ func (b *Backend) Stringify() string {
 
 func (b *Backend) IncrementRequestCounter() {
 	b.NumberRequests++
+}
+
+func (b *Backend) GetHealthStatusUrl() string {
+	return b.HealthStatusUrl
+}
+
+func (b *Backend) UpdateIsHealthy(status bool) {
+	b.IsHealthy = status
 }

@@ -24,10 +24,17 @@ func getHello(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello, Let's make HTTP fun")
 }
 
+func getHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	fmt.Printf("%s: Got root request \n", ctx.Value(keyServerAddr))
+	io.WriteString(w, "I'm healthy!")
+}
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", getRoot)
 	mux.HandleFunc("/hello", getHello)
+	mux.HandleFunc("/health", getHealth)
 
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	serverOne := &http.Server{

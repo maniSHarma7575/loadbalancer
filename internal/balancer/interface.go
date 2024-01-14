@@ -4,7 +4,9 @@ import "net"
 
 type Backend interface {
 	Stringify() string
+	GetHealthStatusUrl() string
 	IncrementRequestCounter()
+	UpdateIsHealthy(status bool)
 }
 
 type IncomingReq interface {
@@ -25,9 +27,25 @@ type LB interface {
 	RunEventLoop()
 	AddBackend(Backend)
 	ChangeStrategy(string)
+	Observer
 }
 
 type Event interface {
 	GetEventName() string
 	GetData() interface{}
+}
+
+type Observer interface {
+	BackendUp(backend Backend)
+	BackendDown(backend Backend)
+}
+
+type Observable interface {
+	Attach(observer Observer)
+	Check()
+}
+
+type HealthCheckerInterface interface {
+	Observable
+	Start(interval int)
 }
