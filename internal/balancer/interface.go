@@ -7,6 +7,7 @@ type Backend interface {
 	GetHealthStatusUrl() string
 	IncrementRequestCounter()
 	UpdateIsHealthy(status bool)
+	IsBackendHealthy() bool
 }
 
 type IncomingReq interface {

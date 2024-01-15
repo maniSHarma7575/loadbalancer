@@ -21,9 +21,10 @@ func (tbhs *TraditionalHasingBS) Init(backends []loadbalancer.Backend) {
 }
 
 func (tbhs *TraditionalHasingBS) GetNextBackend(req loadbalancer.IncomingReq) loadbalancer.Backend {
-	backendIndex := hashFn(req.GetReqID()).Int64() % int64(len(tbhs.Backends))
+	backends := HelathyBackends(tbhs.Backends)
+	backendIndex := hashFn(req.GetReqID()).Int64() % int64(len(backends))
 
-	return tbhs.Backends[backendIndex]
+	return backends[backendIndex]
 }
 
 func (tbhs *TraditionalHasingBS) RegisterBackend(backend loadbalancer.Backend) {

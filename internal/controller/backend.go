@@ -1,6 +1,8 @@
 package controller
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Backend struct {
 	Port            int
@@ -24,4 +26,8 @@ func (b *Backend) GetHealthStatusUrl() string {
 
 func (b *Backend) UpdateIsHealthy(status bool) {
 	b.IsHealthy = status
+}
+
+func (b *Backend) IsBackendHealthy() bool {
+	return b.IsHealthy
 }

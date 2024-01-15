@@ -17,6 +17,9 @@ func (sbs *StaticBS) Init(backends []loadbalancer.Backend) {
 }
 
 func (sbs *StaticBS) GetNextBackend(loadbalancer.IncomingReq) loadbalancer.Backend {
+	for sbs.Index < len(sbs.Backends) && !sbs.Backends[sbs.Index].IsBackendHealthy() {
+		sbs.Index++
+	}
 	return sbs.Backends[sbs.Index]
 }
 
