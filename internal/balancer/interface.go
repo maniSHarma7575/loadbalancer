@@ -7,6 +7,7 @@ type Backend interface {
 	GetHealthStatusUrl() string
 	IncrementRequestCounter()
 	UpdateIsHealthy(status bool)
+	IsBackendHealthy() bool
 }
 
 type IncomingReq interface {
@@ -18,6 +19,7 @@ type BalancingStrategy interface {
 	Init([]Backend)
 	GetNextBackend(IncomingReq) Backend
 	RegisterBackend(Backend)
+	RefreshBackend(Backend)
 	PrintTopology()
 }
 

@@ -26,6 +26,16 @@ func (tbhs *TraditionalHasingBS) GetNextBackend(req loadbalancer.IncomingReq) lo
 	return tbhs.Backends[backendIndex]
 }
 
+func (tbhs *TraditionalHasingBS) RefreshBackend(backend loadbalancer.Backend) {
+	idx := FindBackendIndex(tbhs.Backends, backend)
+
+	if backend.IsBackendHealthy() && idx == -1 {
+		tbhs.Backends = append(tbhs.Backends, backend)
+	} else if idx != -1 && !backend.IsBackendHealthy() {
+		tbhs.Backends = append(tbhs.Backends[:idx], tbhs.Backends[idx+1:]...)
+	}
+}
+
 func (tbhs *TraditionalHasingBS) RegisterBackend(backend loadbalancer.Backend) {
 	tbhs.Backends = append(tbhs.Backends, backend)
 }
