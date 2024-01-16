@@ -17,10 +17,17 @@ func (sbs *StaticBS) Init(backends []loadbalancer.Backend) {
 }
 
 func (sbs *StaticBS) GetNextBackend(loadbalancer.IncomingReq) loadbalancer.Backend {
-	for sbs.Index < len(sbs.Backends) && !sbs.Backends[sbs.Index].IsBackendHealthy() {
-		sbs.Index++
-	}
 	return sbs.Backends[sbs.Index]
+}
+
+func (sbs *StaticBS) RefreshBackend(backend loadbalancer.Backend) {
+	idx := FindBackendIndex(sbs.Backends, backend)
+
+	if backend.IsBackendHealthy() && idx == -1 {
+		sbs.Backends = append(sbs.Backends, backend)
+	} else if idx != -1 && !backend.IsBackendHealthy() {
+		sbs.Backends = append(sbs.Backends[:idx], sbs.Backends[idx+1:]...)
+	}
 }
 
 func (sbs *StaticBS) RegisterBackend(backend loadbalancer.Backend) {

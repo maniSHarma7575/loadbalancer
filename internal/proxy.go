@@ -12,7 +12,7 @@ func StartProxyServer() {
 			{"Host": "localhost", "Port": 8086, "IsHealthy": true, "HealthStatusUrl": "http://localhost:8086/health"},
 			{"Host": "localhost", "Port": 8087, "IsHealthy": true, "HealthStatusUrl": "http://localhost:8087/health"},
 		},
-		"Strategy": "traditional_hash",
+		"Strategy": "consistent_hash",
 	}
 
 	lb := controller.InitLB(configs)

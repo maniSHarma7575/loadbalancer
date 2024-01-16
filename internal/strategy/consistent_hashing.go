@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
@@ -70,6 +71,31 @@ func (chbs *ConsistentHashingBS) RegisterBackend(backend loadbalancer.Backend) {
 	} else {
 		chbs.Backends = append(chbs.Backends[:index+1], chbs.Backends[index:]...)
 		chbs.Backends[index] = backend
+	}
+}
+
+func (chbs *ConsistentHashingBS) RefreshBackend(backend loadbalancer.Backend) {
+	if !backend.IsBackendHealthy() {
+		idx := FindBackendIndex(chbs.Backends, backend)
+
+		if idx != -1 {
+			chbs.Backends = append(chbs.Backends[:idx], chbs.Backends[idx+1:]...)
+			backendHash := hashFn(backend.Stringify()).Int64()
+
+			slotsIndex := slices.IndexFunc(chbs.Slots, func(b int) bool {
+				return int(backendHash) == b
+			})
+
+			if slotsIndex != -1 {
+				chbs.Slots = append(chbs.Slots[:slotsIndex], chbs.Slots[slotsIndex+1:]...)
+			}
+		}
+	} else {
+		idx := FindBackendIndex(chbs.Backends, backend)
+
+		if idx == -1 {
+			chbs.RegisterBackend(backend)
+		}
 	}
 }
 

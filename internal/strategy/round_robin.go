@@ -18,13 +18,17 @@ func (rrbs *RoundRobinBS) Init(backends []loadbalancer.Backend) {
 
 func (rrbs *RoundRobinBS) GetNextBackend(loadbalancer.IncomingReq) loadbalancer.Backend {
 	rrbs.Index = (rrbs.Index + 1) % len(rrbs.Backends)
-	loopCounter := 0
-
-	for loopCounter < len(rrbs.Backends) && !rrbs.Backends[rrbs.Index].IsBackendHealthy() {
-		rrbs.Index = (rrbs.Index + 1) % len(rrbs.Backends)
-		loopCounter += 1
-	}
 	return rrbs.Backends[rrbs.Index]
+}
+
+func (rrbs *RoundRobinBS) RefreshBackend(backend loadbalancer.Backend) {
+	idx := FindBackendIndex(rrbs.Backends, backend)
+
+	if backend.IsBackendHealthy() && idx == -1 {
+		rrbs.Backends = append(rrbs.Backends, backend)
+	} else if idx != -1 && !backend.IsBackendHealthy() {
+		rrbs.Backends = append(rrbs.Backends[:idx], rrbs.Backends[idx+1:]...)
+	}
 }
 
 func (rrbs *RoundRobinBS) RegisterBackend(backend loadbalancer.Backend) {

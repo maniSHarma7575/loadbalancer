@@ -19,6 +19,7 @@ type BalancingStrategy interface {
 	Init([]Backend)
 	GetNextBackend(IncomingReq) Backend
 	RegisterBackend(Backend)
+	RefreshBackend(Backend)
 	PrintTopology()
 }
 

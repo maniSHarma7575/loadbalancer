@@ -3,6 +3,7 @@ package strategy
 import (
 	"crypto/md5"
 	"math/big"
+	"slices"
 
 	"github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
@@ -28,4 +29,9 @@ func HelathyBackends(backends []balancer.Backend) []balancer.Backend {
 		}
 	}
 	return healthyBackends
+}
+
+func FindBackendIndex(backends []balancer.Backend, backend balancer.Backend) int {
+	idx := slices.IndexFunc(backends, func(b balancer.Backend) bool { return backend == b })
+	return idx
 }

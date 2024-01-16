@@ -44,7 +44,7 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 }
 
 func (lb *LoadBalancer) Run() {
-	healthCheckInterval := 10
+	healthCheckInterval := 3
 	healthChecker := NewHealthChecker(lb.Backends)
 	healthChecker.Attach(lb)
 	healthChecker.Start(healthCheckInterval)
@@ -146,7 +146,10 @@ func (lb *LoadBalancer) BackendUp(backend loadbalancer.Backend) {
 	lb.Lock()
 
 	idx := slices.IndexFunc(lb.Backends, func(b loadbalancer.Backend) bool { return backend == b })
-	lb.Backends[idx].UpdateIsHealthy(true)
+	if idx != -1 {
+		lb.Backends[idx].UpdateIsHealthy(true)
+		lb.Strategy.RefreshBackend(lb.Backends[idx])
+	}
 	log.Printf("Server is up: %s", backend.Stringify())
 }
 
@@ -156,6 +159,9 @@ func (lb *LoadBalancer) BackendDown(backend loadbalancer.Backend) {
 	lb.Lock()
 
 	idx := slices.IndexFunc(lb.Backends, func(b loadbalancer.Backend) bool { return backend == b })
-	lb.Backends[idx].UpdateIsHealthy(false)
+	if idx != -1 {
+		lb.Backends[idx].UpdateIsHealthy(false)
+		lb.Strategy.RefreshBackend(lb.Backends[idx])
+	}
 	log.Printf("Server went down: %s", backend.Stringify())
 }
