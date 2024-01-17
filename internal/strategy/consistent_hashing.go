@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"sync"
 
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
@@ -11,6 +12,7 @@ import (
 type ConsistentHashingBS struct {
 	Backends []loadbalancer.Backend
 	Slots    []int
+	sync.RWMutex
 }
 
 func NewConsistentHashingBS(backends []loadbalancer.Backend) *ConsistentHashingBS {
@@ -75,6 +77,9 @@ func (chbs *ConsistentHashingBS) RegisterBackend(backend loadbalancer.Backend) {
 }
 
 func (chbs *ConsistentHashingBS) RefreshBackend(backend loadbalancer.Backend) {
+	defer chbs.Unlock()
+
+	chbs.Lock()
 	if !backend.IsBackendHealthy() {
 		idx := FindBackendIndex(chbs.Backends, backend)
 

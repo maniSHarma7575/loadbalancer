@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"fmt"
+	"sync"
 
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
@@ -9,6 +10,7 @@ import (
 type RoundRobinBS struct {
 	Index    int
 	Backends []loadbalancer.Backend
+	sync.RWMutex
 }
 
 func (rrbs *RoundRobinBS) Init(backends []loadbalancer.Backend) {
@@ -22,6 +24,9 @@ func (rrbs *RoundRobinBS) GetNextBackend(loadbalancer.IncomingReq) loadbalancer.
 }
 
 func (rrbs *RoundRobinBS) RefreshBackend(backend loadbalancer.Backend) {
+	defer rrbs.Unlock()
+
+	rrbs.Lock()
 	idx := FindBackendIndex(rrbs.Backends, backend)
 
 	if backend.IsBackendHealthy() && idx == -1 {

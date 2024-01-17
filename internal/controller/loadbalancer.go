@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"slices"
+	"strconv"
 	"sync"
 
 	"github.com/google/uuid"
@@ -25,11 +26,14 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 	backends := []loadbalancer.Backend{}
 
 	for _, backendDetails := range configs["Backends"].([]map[string]interface{}) {
+		host := backendDetails["Host"].(string)
+		port := backendDetails["Port"].(int)
+
 		backends = append(backends, &Backend{
 			Host:            backendDetails["Host"].(string),
 			Port:            backendDetails["Port"].(int),
-			IsHealthy:       backendDetails["IsHealthy"].(bool),
-			HealthStatusUrl: backendDetails["HealthStatusUrl"].(string),
+			IsHealthy:       false,
+			HealthStatusUrl: "http://" + host + ":" + strconv.Itoa(port) + backendDetails["HealthStatusUrl"].(string),
 		})
 	}
 
@@ -44,7 +48,7 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 }
 
 func (lb *LoadBalancer) Run() {
-	healthCheckInterval := 3
+	healthCheckInterval := 10
 	healthChecker := NewHealthChecker(lb.Backends)
 	healthChecker.Attach(lb)
 	healthChecker.Start(healthCheckInterval)

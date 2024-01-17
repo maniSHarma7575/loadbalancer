@@ -2,6 +2,7 @@ package strategy
 
 import (
 	"fmt"
+	"sync"
 
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
@@ -9,6 +10,7 @@ import (
 type StaticBS struct {
 	Index    int
 	Backends []loadbalancer.Backend
+	sync.RWMutex
 }
 
 func (sbs *StaticBS) Init(backends []loadbalancer.Backend) {
@@ -21,6 +23,9 @@ func (sbs *StaticBS) GetNextBackend(loadbalancer.IncomingReq) loadbalancer.Backe
 }
 
 func (sbs *StaticBS) RefreshBackend(backend loadbalancer.Backend) {
+	defer sbs.Unlock()
+
+	sbs.Lock()
 	idx := FindBackendIndex(sbs.Backends, backend)
 
 	if backend.IsBackendHealthy() && idx == -1 {
