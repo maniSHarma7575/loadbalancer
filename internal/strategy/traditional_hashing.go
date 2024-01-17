@@ -2,12 +2,14 @@ package strategy
 
 import (
 	"fmt"
+	"sync"
 
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 )
 
 type TraditionalHasingBS struct {
 	Backends []loadbalancer.Backend
+	sync.RWMutex
 }
 
 func NewTraditionalHashBS(backends []loadbalancer.Backend) *TraditionalHasingBS {
@@ -27,6 +29,9 @@ func (tbhs *TraditionalHasingBS) GetNextBackend(req loadbalancer.IncomingReq) lo
 }
 
 func (tbhs *TraditionalHasingBS) RefreshBackend(backend loadbalancer.Backend) {
+	defer tbhs.Unlock()
+
+	tbhs.Lock()
 	idx := FindBackendIndex(tbhs.Backends, backend)
 
 	if backend.IsBackendHealthy() && idx == -1 {

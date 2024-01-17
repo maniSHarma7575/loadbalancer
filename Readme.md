@@ -32,9 +32,9 @@ You can use loadbalancer utility by running command in your terminal:
 ```go
 	configs := map[string]interface{}{
 		"Backends": []map[string]interface{}{
-			{"Host": "localhost", "Port": 8085, "IsHealthy": true},
-			{"Host": "localhost", "Port": 8086, "IsHealthy": true},
-			{"Host": "localhost", "Port": 8087, "IsHealthy": true},
+			{"Host": "localhost", "Port": 8085, "HealthStatusUrl": "/health"},
+			{"Host": "localhost", "Port": 8086, "HealthStatusUrl": "/health"},
+			{"Host": "localhost", "Port": 8087, "HealthStatusUrl": "/health"},
 		},
 		"Strategy": "consistent_hash",
 	}
