@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
+	"github.com/maniSHarma7575/loadbalancer/internal/config"
 	"github.com/maniSHarma7575/loadbalancer/internal/strategy"
 )
 
@@ -17,23 +18,31 @@ type LoadBalancer struct {
 	Backends []loadbalancer.Backend
 	Events   chan loadbalancer.Event
 	Strategy loadbalancer.BalancingStrategy
+	Config   config.Config
 	sync.RWMutex
 }
 
 var lb *LoadBalancer
 
 func InitLB(configs map[string]interface{}) *LoadBalancer {
+	var cfg config.Config
+	configPaths := config.ConfigPaths()
+	for _, configPath := range configPaths {
+		config, err := config.Load(configPath)
+		if err == nil {
+			cfg = *config
+			break
+		}
+	}
+
 	backends := []loadbalancer.Backend{}
 
-	for _, backendDetails := range configs["Backends"].([]map[string]interface{}) {
-		host := backendDetails["Host"].(string)
-		port := backendDetails["Port"].(int)
-
+	for _, server := range *cfg.Servers {
 		backends = append(backends, &Backend{
-			Host:            backendDetails["Host"].(string),
-			Port:            backendDetails["Port"].(int),
+			Host:            server.Host,
+			Port:            server.Port,
 			IsHealthy:       false,
-			HealthStatusUrl: "http://" + host + ":" + strconv.Itoa(port) + backendDetails["HealthStatusUrl"].(string),
+			HealthStatusUrl: "http://" + server.Host + ":" + strconv.Itoa(server.Port) + server.HealthPath,
 		})
 	}
 
@@ -41,19 +50,20 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 		Backends: backends,
 		Events:   make(chan loadbalancer.Event),
 		Strategy: strategy.NewConsistentHashingBS(backends),
+		Config:   cfg,
 	}
 
-	lb.ChangeStrategy(configs["Strategy"].(string))
+	lb.ChangeStrategy(cfg.LoadBalanceStrategy)
 	return lb
 }
 
 func (lb *LoadBalancer) Run() {
-	healthCheckInterval := 10
+	healthCheckInterval := lb.Config.HealthCheckIntervalSeconds
 	healthChecker := NewHealthChecker(lb.Backends)
 	healthChecker.Attach(lb)
 	healthChecker.Start(healthCheckInterval)
 
-	listener, err := net.Listen("tcp", ":8082")
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(lb.Config.Port))
 
 	if err != nil {
 		panic(err)
