@@ -15,7 +15,21 @@ git clone https://github.com/maniSHarma7575/loadbalancer
 
 # Change directory
 cd loadbalancer
+```
 
+Note: Before building you have to make the required configuration file as defined in
+
+### Configuration
+
+You can manage the configuration for the loadbalancer by either json or yaml.
+
+1. Create the symlink from the `config.json.sample` or `config.yaml.sample`
+
+```
+cp internal/config/config.json.sample internal/config/config.json
+cp internal/config/config.yaml.sample internal/config/config.yaml
+```
+```
 # Build
 go build
 
@@ -23,22 +37,9 @@ go build
 go run main.go
 ```
 
-## Usage
+2. Change the configuration as per you requirement
 
-You can use loadbalancer utility by running command in your terminal:
 
-1. Change the Backend Configuration in `proxy.go`. Default configuration are listed below
-
-```go
-	configs := map[string]interface{}{
-		"Backends": []map[string]interface{}{
-			{"Host": "localhost", "Port": 8085, "HealthStatusUrl": "/health"},
-			{"Host": "localhost", "Port": 8086, "HealthStatusUrl": "/health"},
-			{"Host": "localhost", "Port": 8087, "HealthStatusUrl": "/health"},
-		},
-		"Strategy": "consistent_hash",
-	}
-```
 
 `Strategy` can have the following values:
 
@@ -47,7 +48,11 @@ You can use loadbalancer utility by running command in your terminal:
 - `traditional-hash`
 - `consistent-hash`
 
-2. Run the test servers:
+## Usage
+
+You can use loadbalancer utility by running command in your terminal:
+
+1. Run the test servers:
 
 ```bash
   #change directory
@@ -59,7 +64,7 @@ You can use loadbalancer utility by running command in your terminal:
   #run servers
   ./httpserver
 ```
-3. Build and run the loadbalancer
+2. Build and run the loadbalancer
 
 ```bash
   go run build && ./loadbalancer
