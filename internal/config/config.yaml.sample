@@ -11,3 +11,6 @@ servers:
   - host: localhost
     port: 8087
     health_path: /health
+sticky_session:
+  cookie_name: "example"
+  ttl_seconds: 100

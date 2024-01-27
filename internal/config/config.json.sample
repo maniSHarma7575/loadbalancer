@@ -3,15 +3,19 @@
   "load_balance_strategy": "consistent-hashing",
   "health_check_interval_seconds": 5,
   "servers": [
-     {
-       "host": "localhost",
-       "port": 8085,
-       "health_path": "/health"
-     },
-     {
-       "host": "localhost",
-       "port": 8086,
-       "health_path": "/health"
-     }
-   ]
+    {
+      "host": "localhost",
+      "port": 8085,
+      "health_path": "/health"
+    },
+    {
+      "host": "localhost",
+      "port": 8086,
+      "health_path": "/health"
+    }
+  ],
+  "sticky_session" : {
+    "cookie_name": "example"
+    "ttl_seconds": 100
+  }
 }

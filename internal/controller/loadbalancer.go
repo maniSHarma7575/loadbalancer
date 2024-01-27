@@ -1,12 +1,15 @@
 package controller
 
 import (
-	"io"
+	"fmt"
 	"log"
-	"net"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"slices"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
@@ -57,35 +60,44 @@ func InitLB(configs map[string]interface{}) *LoadBalancer {
 	return lb
 }
 
+func (lb *LoadBalancer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	req := &IncomingReq{
+		ReqId:   uuid.NewString(),
+		Request: request,
+	}
+
+	backend := lb.Strategy.GetNextBackend(req)
+
+	t := time.Now()
+	log.Printf("in-req: %s out-req: %s", req.GetReqID(), backend.Stringify())
+
+	parsedUrl, _ := url.Parse(backend.Stringify())
+	proxy := httputil.NewSingleHostReverseProxy(parsedUrl)
+	cookie, _ := request.Cookie(lb.Config.StickySession.CookieKey)
+	http.SetCookie(writer, cookie)
+	proxy.ServeHTTP(writer, request)
+	backend.IncrementRequestCounter()
+	log.Printf("request served in server: %s time: %s", backend.Stringify(), time.Since(t))
+}
+
 func (lb *LoadBalancer) Run() {
 	healthCheckInterval := lb.Config.HealthCheckIntervalSeconds
 	healthChecker := NewHealthChecker(lb.Backends)
 	healthChecker.Attach(lb)
 	healthChecker.Start(healthCheckInterval)
 
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(lb.Config.Port))
-
-	if err != nil {
-		panic(err)
-	}
-
-	defer listener.Close()
-
-	log.Println("LB listening on port 8082")
-
 	go lb.RunEventLoop()
 
-	for {
-		connection, err := listener.Accept()
+	var httpHandler http.Handler = lb
+	port := strconv.Itoa(lb.Config.Port)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: httpHandler,
+	}
 
-		if err != nil {
-			log.Printf("unable to accept the connection: %s", err.Error())
-		}
-
-		go lb.Proxy(&IncomingReq{
-			SrcConn: connection,
-			ReqId:   uuid.NewString(),
-		})
+	log.Printf("LB listening on port :%s\n", port)
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -96,14 +108,20 @@ func (lb *LoadBalancer) AddBackend(backend *Backend) {
 
 func (lb *LoadBalancer) ChangeStrategy(stratgeyName string) {
 	switch stratgeyName {
-	case "round-robin":
+	case strategy.RoundRobinStrategy:
 		lb.Strategy = strategy.NewRoundRobinBS(lb.Backends)
-	case "static":
+	case strategy.StaticStrategy:
 		lb.Strategy = strategy.NewStaticBS(lb.Backends)
-	case "traditional_hash":
+	case strategy.TraditionalHashingStrategy:
 		lb.Strategy = strategy.NewTraditionalHashBS(lb.Backends)
-	case "consistent_hash":
+	case strategy.ConsistentHashingStrategy:
 		lb.Strategy = strategy.NewConsistentHashingBS(lb.Backends)
+	case strategy.StickySessionStrategy:
+		lb.Strategy = strategy.NewStickySessionBS(
+			lb.Backends,
+			lb.Config.StickySession.CookieKey,
+			lb.Config.StickySession.TTLSeconds,
+		)
 	default:
 		lb.Strategy = strategy.NewConsistentHashingBS(lb.Backends)
 	}
@@ -132,26 +150,6 @@ func (lb *LoadBalancer) RunEventLoop() {
 			}
 		}
 	}
-}
-
-func (lb *LoadBalancer) Proxy(req loadbalancer.IncomingReq) {
-	backend := lb.Strategy.GetNextBackend(req)
-
-	log.Printf("in-req: %s out-req: %s", req.GetReqID(), backend.Stringify())
-
-	backendConn, err := net.Dial("tcp", backend.Stringify())
-
-	if err != nil {
-		log.Printf("error connecting to backend: %s", err.Error())
-		req.GetSrcConn().Write([]byte("backend not avaiable"))
-		req.GetSrcConn().Close()
-		panic(err)
-	}
-
-	backend.IncrementRequestCounter()
-
-	go io.Copy(backendConn, req.GetSrcConn())
-	go io.Copy(req.GetSrcConn(), backendConn)
 }
 
 func (lb *LoadBalancer) BackendUp(backend loadbalancer.Backend) {

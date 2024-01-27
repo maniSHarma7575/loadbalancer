@@ -35,3 +35,11 @@ func FindBackendIndex(backends []balancer.Backend, backend balancer.Backend) int
 	idx := slices.IndexFunc(backends, func(b balancer.Backend) bool { return backend == b })
 	return idx
 }
+
+var (
+	RoundRobinStrategy         = "round-robin"
+	StaticStrategy             = "static"
+	TraditionalHashingStrategy = "traditional_hash"
+	ConsistentHashingStrategy  = "consistent_hash"
+	StickySessionStrategy      = "sticky_session"
+)

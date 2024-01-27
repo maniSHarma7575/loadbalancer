@@ -1,16 +1,16 @@
 package controller
 
-import "net"
+import "net/http"
 
 type IncomingReq struct {
-	SrcConn net.Conn
 	ReqId   string
+	Request *http.Request
 }
 
 func (req *IncomingReq) GetReqID() string {
 	return req.ReqId
 }
 
-func (req *IncomingReq) GetSrcConn() net.Conn {
-	return req.SrcConn
+func (req *IncomingReq) GetHttpRequest() *http.Request {
+	return req.Request
 }

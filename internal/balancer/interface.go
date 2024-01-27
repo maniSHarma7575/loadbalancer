@@ -1,6 +1,6 @@
 package balancer
 
-import "net"
+import "net/http"
 
 type Backend interface {
 	Stringify() string
@@ -12,7 +12,7 @@ type Backend interface {
 
 type IncomingReq interface {
 	GetReqID() string
-	GetSrcConn() net.Conn
+	GetHttpRequest() *http.Request
 }
 
 type BalancingStrategy interface {
@@ -24,7 +24,6 @@ type BalancingStrategy interface {
 }
 
 type LB interface {
-	Proxy(IncomingReq)
 	Run()
 	RunEventLoop()
 	AddBackend(Backend)

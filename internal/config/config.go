@@ -1,6 +1,8 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 type Server struct {
 	Host       string `mapstructure:"host" json:"host" yaml:"host"`
@@ -8,11 +10,17 @@ type Server struct {
 	HealthPath string `mapstructure:"health_path" json:"health_path" yaml:"health_path"`
 }
 
+type StickySession struct {
+	CookieKey  string `mapstructure:"cookie_name" json:"cookie_name" yaml:"cookie_name"`
+	TTLSeconds int    `mapstructure:"ttl_seconds" json:"ttl_seconds" yaml:"ttl_seconds"`
+}
+
 type Config struct {
-	Port                       int       `mapstructure:"port" json:"port" yaml:"port"`
-	LoadBalanceStrategy        string    `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
-	HealthCheckIntervalSeconds int       `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
-	Servers                    *[]Server `mapstructure:"servers" json:"servers" yaml:"servers"`
+	Port                       int           `mapstructure:"port" json:"port" yaml:"port"`
+	LoadBalanceStrategy        string        `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
+	HealthCheckIntervalSeconds int           `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
+	Servers                    *[]Server     `mapstructure:"servers" json:"servers" yaml:"servers"`
+	StickySession              StickySession `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
 }
 
 func Load(path string) (*Config, error) {
