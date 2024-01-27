@@ -13,7 +13,7 @@ type Backend struct {
 }
 
 func (b *Backend) Stringify() string {
-	return fmt.Sprintf("%s:%d", b.Host, b.Port)
+	return fmt.Sprintf("http://%s:%d", b.Host, b.Port)
 }
 
 func (b *Backend) IncrementRequestCounter() {

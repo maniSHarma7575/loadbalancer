@@ -12,7 +12,6 @@ type Server struct {
 
 type StickySession struct {
 	CookieKey  string `mapstructure:"cookie_name" json:"cookie_name" yaml:"cookie_name"`
-	Enabled    bool   `mapstructure:"enabled" json:"enabled" yaml:"enabled"`
 	TTLSeconds int    `mapstructure:"ttl_seconds" json:"ttl_seconds" yaml:"ttl_seconds"`
 }
 

@@ -13,5 +13,4 @@ servers:
     health_path: /health
 sticky_session:
   cookie_name: "example"
-  enabled: false
   ttl_seconds: 100
