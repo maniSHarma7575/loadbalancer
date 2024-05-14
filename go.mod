@@ -1,6 +1,6 @@
 module github.com/maniSHarma7575/loadbalancer
 
-go 1.20
+go 1.21
 
 require github.com/google/uuid v1.5.0
 

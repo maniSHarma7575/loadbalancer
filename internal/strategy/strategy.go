@@ -42,4 +42,5 @@ var (
 	TraditionalHashingStrategy = "traditional_hash"
 	ConsistentHashingStrategy  = "consistent_hash"
 	StickySessionStrategy      = "sticky_session"
+	LeastConnectionStrategy    = "least_connections"
 )
