@@ -27,7 +27,7 @@ type LoadBalancer struct {
 
 var lb *LoadBalancer
 
-func InitLB(configs map[string]interface{}) *LoadBalancer {
+func InitLB() *LoadBalancer {
 	var cfg config.Config
 	configPaths := config.ConfigPaths()
 	for _, configPath := range configPaths {
@@ -122,6 +122,8 @@ func (lb *LoadBalancer) ChangeStrategy(stratgeyName string) {
 			lb.Config.StickySession.CookieKey,
 			lb.Config.StickySession.TTLSeconds,
 		)
+	case strategy.LeastConnectionStrategy:
+		lb.Strategy = strategy.NewLeastConnectionBS(lb.Backends)
 	default:
 		lb.Strategy = strategy.NewConsistentHashingBS(lb.Backends)
 	}
