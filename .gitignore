@@ -2,3 +2,5 @@ loadbalancer
 test/httpserver/httpserver
 internal/config/config.json
 internal/config/config.yaml
+cert.pem
+key.pem

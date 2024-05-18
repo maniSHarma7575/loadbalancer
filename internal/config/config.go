@@ -15,12 +15,19 @@ type StickySession struct {
 	TTLSeconds int    `mapstructure:"ttl_seconds" json:"ttl_seconds" yaml:"ttl_seconds"`
 }
 
+type Tls struct {
+	Enabled  bool   `mapstructure:"enabled" json:"enabled" yaml:"enabled"`
+	CertFile string `mapstructure:"cert_file" json:"cert_file" yaml:"cert_file"`
+	KeyFile  string `mapstructure:"key_file" json:"key_file" yaml:"key_file"`
+}
+
 type Config struct {
 	Port                       int           `mapstructure:"port" json:"port" yaml:"port"`
 	LoadBalanceStrategy        string        `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
 	HealthCheckIntervalSeconds int           `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
 	Servers                    *[]Server     `mapstructure:"servers" json:"servers" yaml:"servers"`
 	StickySession              StickySession `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
+	Tls                        Tls           `mapstructure:"tls" json:"tls" yaml:"tls"`
 }
 
 func Load(path string) (*Config, error) {

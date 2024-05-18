@@ -17,5 +17,10 @@
   "sticky_session" : {
     "cookie_name": "example"
     "ttl_seconds": 100
+  },
+  "tls" : {
+    "enabled": true,
+    "cert_file": "/path/on/container/cert.pem",
+    "key_file": "/path/on/container/key.pem"
   }
 }

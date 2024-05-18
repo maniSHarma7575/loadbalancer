@@ -15,6 +15,7 @@ import (
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 	"github.com/maniSHarma7575/loadbalancer/internal/config"
 	"github.com/maniSHarma7575/loadbalancer/internal/strategy"
+	"github.com/maniSHarma7575/loadbalancer/internal/utils"
 )
 
 type LoadBalancer struct {
@@ -96,8 +97,27 @@ func (lb *LoadBalancer) Run() {
 	}
 
 	log.Printf("LB listening on port :%s\n", port)
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
+	tlsEnabled := lb.Config.Tls.Enabled
+
+	if tlsEnabled {
+		certFile := lb.Config.Tls.CertFile
+		keyFile := lb.Config.Tls.KeyFile
+
+		if !utils.IsFileExists(certFile) {
+			panic(fmt.Errorf("TLS cert filepath doesn't exist %v", certFile))
+		}
+
+		if !utils.IsFileExists((keyFile)) {
+			panic(fmt.Errorf("TLS key filepath doesn't exist %v", keyFile))
+		}
+
+		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		if err := server.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
