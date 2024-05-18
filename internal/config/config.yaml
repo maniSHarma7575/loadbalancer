@@ -1,0 +1,20 @@
+port: 8082
+load_balance_strategy: "least_connections"
+health_check_interval_seconds: 5
+servers:
+  - host: localhost
+    port: 8085
+    health_path: /health
+  - host: localhost
+    port: 8086
+    health_path: /health
+  - host: localhost
+    port: 8087
+    health_path: /health
+sticky_session:
+  cookie_name: "lbsession"
+  ttl_seconds: 100
+tls:
+  enabled: true
+  cert_file: "/Users/manishsharma/Development/personal/learning-concepts/handson/github.com/maniSHarma7575/loadbalancer/cert.pem"
+  key_file: "/Users/manishsharma/Development/personal/learning-concepts/handson/github.com/maniSHarma7575/loadbalancer/key.pem"
