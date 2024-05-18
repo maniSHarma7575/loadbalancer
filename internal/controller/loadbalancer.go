@@ -99,8 +99,6 @@ func (lb *LoadBalancer) Run() {
 	log.Printf("LB listening on port :%s\n", port)
 	tlsEnabled := lb.Config.Tls.Enabled
 
-	fmt.Println(tlsEnabled)
-
 	if tlsEnabled {
 		certFile := lb.Config.Tls.CertFile
 		keyFile := lb.Config.Tls.KeyFile
