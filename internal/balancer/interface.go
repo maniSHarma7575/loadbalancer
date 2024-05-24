@@ -8,11 +8,13 @@ type Backend interface {
 	IncrementRequestCounter()
 	UpdateIsHealthy(status bool)
 	IsBackendHealthy() bool
+	GetName() string
 }
 
 type IncomingReq interface {
 	GetReqID() string
 	GetHttpRequest() *http.Request
+	GetHeadersAsMap() map[string]string
 }
 
 type BalancingStrategy interface {

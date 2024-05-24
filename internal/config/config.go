@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/maniSHarma7575/loadbalancer/internal/models"
 	"github.com/spf13/viper"
 )
 
@@ -22,32 +23,14 @@ type Tls struct {
 	KeyFile  string `mapstructure:"key_file" json:"key_file" yaml:"key_file"`
 }
 
-type RouteAction struct {
-	RouteTo string `mapstructure:"route_to" json:"route_to" yaml:"route_to"`
-}
-
-type RouteCondition struct {
-	PathPrefix string            `mapstructure:"path_prefix" json:"path_prefix" yaml:"path_prefix"`
-	Headers    map[string]string `mapstructure:"headers" json:"headers" yaml:"headers"`
-	Method     string            `mapstructure:"method" json:"method" yaml:"method"`
-}
-
-type RoutingRule struct {
-	Conditions []RouteCondition `mapstructure:"conditions" json:"conditions" yaml:"conditions"`
-	Action     RouteAction      `mapstructure:"action" json:"action" yaml:"action"`
-}
-type Routing struct {
-	Rules []RoutingRule `mapstructure:"rules" json:"rules" yaml:"rules"`
-}
-
 type Config struct {
-	Port                       int           `mapstructure:"port" json:"port" yaml:"port"`
-	LoadBalanceStrategy        string        `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
-	HealthCheckIntervalSeconds int           `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
-	Servers                    *[]Server     `mapstructure:"servers" json:"servers" yaml:"servers"`
-	StickySession              StickySession `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
-	Tls                        Tls           `mapstructure:"tls" json:"tls" yaml:"tls"`
-	Routing                    Routing       `mapstructure:"routing" json:"routing" yaml:"routing"`
+	Port                       int            `mapstructure:"port" json:"port" yaml:"port"`
+	LoadBalanceStrategy        string         `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
+	HealthCheckIntervalSeconds int            `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
+	Servers                    *[]Server      `mapstructure:"servers" json:"servers" yaml:"servers"`
+	StickySession              StickySession  `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
+	Tls                        Tls            `mapstructure:"tls" json:"tls" yaml:"tls"`
+	Routing                    models.Routing `mapstructure:"routing" json:"routing" yaml:"routing"`
 }
 
 func Load(path string) (*Config, error) {

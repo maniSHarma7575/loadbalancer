@@ -10,6 +10,7 @@ type Backend struct {
 	IsHealthy       bool
 	NumberRequests  int
 	HealthStatusUrl string
+	AppName         string
 }
 
 func (b *Backend) Stringify() string {
@@ -30,4 +31,8 @@ func (b *Backend) UpdateIsHealthy(status bool) {
 
 func (b *Backend) IsBackendHealthy() bool {
 	return b.IsHealthy
+}
+
+func (b *Backend) GetName() string {
+	return b.AppName
 }
