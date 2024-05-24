@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	loadbalancer "github.com/maniSHarma7575/loadbalancer/internal/balancer"
 	"github.com/maniSHarma7575/loadbalancer/internal/config"
+	"github.com/maniSHarma7575/loadbalancer/internal/models"
 	"github.com/maniSHarma7575/loadbalancer/internal/strategy"
 	"github.com/maniSHarma7575/loadbalancer/internal/utils"
 )
@@ -23,6 +24,7 @@ type LoadBalancer struct {
 	Events   chan loadbalancer.Event
 	Strategy loadbalancer.BalancingStrategy
 	Config   config.Config
+	Routing  models.Routing
 	sync.RWMutex
 }
 
@@ -47,6 +49,7 @@ func InitLB() *LoadBalancer {
 			Port:            server.Port,
 			IsHealthy:       false,
 			HealthStatusUrl: "http://" + server.Host + ":" + strconv.Itoa(server.Port) + server.HealthPath,
+			AppName:         server.AppName,
 		})
 	}
 
@@ -55,6 +58,7 @@ func InitLB() *LoadBalancer {
 		Events:   make(chan loadbalancer.Event),
 		Strategy: strategy.NewConsistentHashingBS(backends),
 		Config:   cfg,
+		Routing:  cfg.Routing,
 	}
 
 	lb.ChangeStrategy(cfg.LoadBalanceStrategy)
@@ -67,7 +71,15 @@ func (lb *LoadBalancer) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 		Request: request,
 	}
 
-	backend := lb.Strategy.GetNextBackend(req)
+	var backend loadbalancer.Backend
+
+	if lb.cbrEnabled() {
+		backend = lb.getBackendFromCbr(req)
+	}
+
+	if backend == nil {
+		backend = lb.Strategy.GetNextBackend(req)
+	}
 
 	t := time.Now()
 	log.Printf("in-req: %s out-req: %s", req.GetReqID(), backend.Stringify())
@@ -79,6 +91,34 @@ func (lb *LoadBalancer) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 	proxy.ServeHTTP(writer, request)
 	backend.IncrementRequestCounter()
 	log.Printf("request served in server: %s time: %s", backend.Stringify(), time.Since(t))
+}
+
+func (lb *LoadBalancer) getBackendFromCbr(req loadbalancer.IncomingReq) loadbalancer.Backend {
+	backendName := lb.Routing.GetRoute(&models.RouteProp{
+		Method:  req.GetHttpRequest().Method,
+		Headers: req.GetHeadersAsMap(),
+		Path:    req.GetHttpRequest().URL.Path,
+	})
+
+	if backendName == "" {
+		return nil
+	}
+
+	backend := lb.getBackendByName(backendName)
+	return backend
+}
+
+func (lb *LoadBalancer) getBackendByName(appName string) loadbalancer.Backend {
+	for _, backend := range lb.Backends {
+		if backend.GetName() == appName {
+			return backend
+		}
+	}
+	return nil
+}
+
+func (lb *LoadBalancer) cbrEnabled() bool {
+	return len(lb.Config.Routing.Rules) >= 1
 }
 
 func (lb *LoadBalancer) Run() {

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/maniSHarma7575/loadbalancer/internal/models"
 	"github.com/spf13/viper"
 )
 
@@ -8,6 +9,7 @@ type Server struct {
 	Host       string `mapstructure:"host" json:"host" yaml:"host"`
 	Port       int    `mapstructure:"port" json:"port" yaml:"port"`
 	HealthPath string `mapstructure:"health_path" json:"health_path" yaml:"health_path"`
+	AppName    string `mapstructure:"app_name" json:"app_name" yaml:"app_name"`
 }
 
 type StickySession struct {
@@ -22,12 +24,13 @@ type Tls struct {
 }
 
 type Config struct {
-	Port                       int           `mapstructure:"port" json:"port" yaml:"port"`
-	LoadBalanceStrategy        string        `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
-	HealthCheckIntervalSeconds int           `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
-	Servers                    *[]Server     `mapstructure:"servers" json:"servers" yaml:"servers"`
-	StickySession              StickySession `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
-	Tls                        Tls           `mapstructure:"tls" json:"tls" yaml:"tls"`
+	Port                       int            `mapstructure:"port" json:"port" yaml:"port"`
+	LoadBalanceStrategy        string         `mapstructure:"load_balance_strategy" json:"load_balance_strategy" yaml:"load_balance_strategy"`
+	HealthCheckIntervalSeconds int            `mapstructure:"health_check_interval_seconds" json:"health_check_interval_seconds" yaml:"health_check_interval_seconds"`
+	Servers                    *[]Server      `mapstructure:"servers" json:"servers" yaml:"servers"`
+	StickySession              StickySession  `mapstructure:"sticky_session" json:"sticky_session" yaml:"sticky_session"`
+	Tls                        Tls            `mapstructure:"tls" json:"tls" yaml:"tls"`
+	Routing                    models.Routing `mapstructure:"routing" json:"routing" yaml:"routing"`
 }
 
 func Load(path string) (*Config, error) {
