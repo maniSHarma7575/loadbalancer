@@ -70,6 +70,52 @@ You can use loadbalancer utility by running command in your terminal:
   go run build && ./loadbalancer
 ```
 
+3. Configuring TLS
+
+```bash
+# update config.yaml or config.json and replace the cert file and key file
+
+tls_enabled: true
+tls_cert_file: "/path/on/container/cert.pem"
+tls_key_file: "/path/on/container/key.pem"
+```
+
+4. Configuring Content Based Routing (CBR)
+
+```bash
+# Append to config.yaml
+routing:
+  rules:
+    - conditions:
+      - path_prefix: "/api/v1"
+        method: "GET"
+        headers:
+      actions:
+        route_to: "app2"
+  
+# OR
+
+# Append to config.json
+"routing": {
+  "rules": [
+    {
+      "conditions": [
+        {
+          "path_prefix": "/api/v1",
+          "method": "GET",
+          "headers": {
+            "header": "header_value"
+          }
+        }
+      ],
+      "actions": {
+        "route_to": "app2"
+      }
+    }
+  ]
+}
+```
+
 ### Description
 
 Following Strategy are available:
